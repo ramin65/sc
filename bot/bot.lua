@@ -49,6 +49,8 @@ end
 require("./bot/helper")
 local now = os.time()
 math.randomseed(now)
+our_id = 0
+started = false
 -----------------------------------------------------------#RUNNING
 function on_msg_receive(msg)
   if not started then
@@ -57,36 +59,28 @@ function on_msg_receive(msg)
   if type(msg) == 'boolean' then
   return false
   end
- 
-  --print(os.time().."|"..msg.date)
-  local msghash = 'msghash:'
-
-        redis:incr(msghash)
-  msg = backward_msg_format(msg)
-  if type(msg) ~= 'boolean' then
-  receiver = get_receiver(msg)
-  end
   if msg.date < now - 5 then
     return false
   end
+  local msghash = 'msghash:'
+  redis:incr(msghash)
+  if msg.out then
+  local mmsghash = 'mmsghash:'
+   redis:incr(mmsghash)
+    return false
+  end
+  msg = backward_msg_format(msg)
+  receiver = get_receiver(msg)
    if msg.service then
       local action = msg.action or {type=""}
       msg.text = "!!tgservice " .. action.type
-
       if msg.from.id == our_id then
          msg.from.id = 0
       end
    end
-
-if msg.out then
-  local mmsghash = 'mmsghash:'
-
-   redis:incr(mmsghash)
-    return false
-  end
-    if msg then
+   if msg ~= nil then
       pre_process_msg(msg)
-  end
+	  end
 end
 
 function ok_cb(extra, success, result)
@@ -94,16 +88,11 @@ end
 
 function on_binlog_replay_end()
   started = true
-  postpone (cron_plugins, false, 60)
-  reload_bot()
+  postpone(cron_plugins, false, 10)
   _config = load_config()
   plugins = {}
   load_plugins()
 
-end
-function reload_bot() 
-  print("Loading bot module")
-  send_msg("user#id"..148617896, "test", ok_cb, false)
 end
 
 function pre_process_msg(msg)
@@ -130,27 +119,23 @@ local function is_plugin_disabled_on_chat(plugin_name, receiver)
 end
 
 function match_plugin(plugin, plugin_name, msg)
-if type(msg) == 'boolean' then
-  return false
+  if type(msg) == 'boolean' then
+     return false
   end
-local receiver = get_receiver(msg)
   for k, pattern in pairs(plugin.patterns) do
- 
-  if msg and msg.text then
+  if msg.text then
    matches = match_pattern(pattern, msg.text:lower())
   else
    matches = match_pattern(pattern, msg.text)
   end
     if matches then
 	local commands = 'commands:'
-
     redis:incr(commands)
-      print("msg matches: ", pattern)
+      print('pattern >>>>>> ', '"'..pattern..'",')
       if is_plugin_disabled_on_chat(plugin_name, receiver) then
         return nil
       end
       if plugin.run then
-        -- If plugin is for privileged users only
         if not warns_user_not_allowed(plugin, msg) then
           local result = plugin.run(msg, matches)
           if result then
@@ -230,9 +215,5 @@ function cron_plugins()
       plugin.cron()
     end
   end
-  postpone(cron_plugins, false, 120)
+  postpone(cron_plugins, false, 10)
 end
-
--- Start and load values
-our_id = 0
-started = false
