@@ -2275,7 +2275,7 @@ if matches[1] == 'public' and is_momod(msg) then
 				return unset_public_membermod(msg, data, target)
 			end
 end
---------------------------------------------------#muteallgroups
+--------------------------------------------------#muteallgroup
 if matches[1] == 'mute' and matches[2] == "all" and is_momod(msg) and matches[3] and not matches[4] then
  if  tonumber(matches[3]) < 1 or tonumber(matches[3]) > 120 then
 		return "فقط بین 1 دقیقه تا 120 دقیقه مجاز به میوت همه پیام ها میباشید."
@@ -4939,6 +4939,17 @@ return reply_msg(msg.reply_id, text, ok_cb, false)
 else
 return reply_msg(msg.id, text, ok_cb, false)
 end
+if matches[1] == 'status' and is_sudo(msg) and matches[2] and not string.match(matches[2], '^%d+$') then
+		 local function status_username(extra , success, result)
+		 if success  then
+		 return reply_msg(extra.msg.id, "test", ok_cb, false)
+		 else
+		return reply_msg(extra.msg.id, "test2", ok_cb, false)
+	  end
+        end
+		local username = string.gsub(matches[2], '@', '')
+		return status_online(username, status_username, {msg = msg})
+  end
 end
 --------------------------------------------------#expire
 
@@ -5108,7 +5119,7 @@ if not is_sudo(msg) then
 local users = 'pvusers'
 local users2 = 'pvusers2'..bot_divest..':'..msg.from.id
 redis:sadd(users, msg.from.id)
-redis:setex(users2, 864000, true)
+redis:setex(users2, 86400, true)
 return send_msg(receiver, text, ok_cb, false)
 end
 end
@@ -5269,7 +5280,7 @@ if data[tostring(msg.to.id)] then
         name = "<i> "..value.." </i>"
       end
       --chat_new_user_link(msg)
-      local text = "درود"..name.."ورود شما را به گروه<code> "..msg.to.title.." </code>با مدیریت<i> "..name2.." </i>خوش امد میگوییم\n"..about..rules
+      local text = "درود"..name.."ورود شما را به گروه<code> "..msg.to.title.." </code>با مدیریت <i> "..name2.." </i>خوش امد میگوییم\n"..about..rules
       return reply_msg(msg.id, text, ok_cb, false)
 	end
 	if msg.action.type == "chat_del_user" then
@@ -5297,14 +5308,15 @@ end
 end
 
 ----------------------------------------------------------------#checkusers
-  if msg.to.type == 'chat' or msg.to.type == 'channel' then
+if msg.to.type == 'chat' or msg.to.type == 'channel' then
     local user_id = msg.from.id
     local chat_id = msg.to.id
 if data[tostring(chat_id)] then
    if data[tostring(chat_id)]['settings']['lock_bot'] == "yes" or data[tostring(chat_id)]['settings']['lock_bots'] == "yes" and not is_momod2(user_id, chat_id) then
    if msg.from.username ~= nil then
 	    if string.sub(msg.from.username:lower(), -3) == 'bot' then
-		 return kick_user(user_id, chat_id)
+		   delete_msg(msg.id, ok_cb, false)
+		   return kick_user(user_id, chat_id)
 		end
 		end
 	  end
@@ -5346,6 +5358,11 @@ if data[tostring(chat_id)] then
 	return kick_user(user_id, chat_id)
 	end
  end
+        if msg.from.username ~= nil then
+	       if string.sub(msg.from.username:lower(), -3) == 'bot' and not is_momod(msg) then
+		      return false
+		   end
+		end
 ------------------------------------------------#implementation settings
   if msg.text then
        if data[tostring(msg.to.id)] then
@@ -5452,7 +5469,7 @@ local gwarn = tonumber(redis:get(warn))
 	     redis:del(warn)
 		 delete_msg(msg.id, ok_cb, false)
 		 kick_user(user_id, chat_id)
-		 return send_large_msg(receiver, "کاربر "..string.gsub(msg.from.print_name, "_", " ").." به دلیل عدم رعایت قوانین(تبلیغ) ریمو شد", ok_cb, false)
+		 return send_large_msg(receiver, "کاربر "..string.gsub(msg.from.print_name, "_", " ").." به دلیل عدم رعایت قوانین ریمو شد", ok_cb, false)
 		 end
       end
    end
@@ -5862,6 +5879,7 @@ return {
 	"^[#!/](pvclean)$","^(pvclean)$",
 	"^[#!/](whois) (.*)$","^(whois) (.*)$",
 	"^[#!/](nerkh)$","^(nerkh)$",
+	 "^[#!/](status) (.*)$","^(status) (.*)$",
   },
   run = run,
   pre_process = pre_process,
