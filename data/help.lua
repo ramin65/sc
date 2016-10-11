@@ -62,26 +62,34 @@ shelp = [[راهنما برای تنظیم ربات :
 
 <b>settings lock|unlock </b>تنظیمات سختگیرانه
 
-<b>lock link|spam|flood|flood|en|fa|member|tgservice|sticker|share|photo|text|audio|video|file|gif|fwd|bot|join|reply|tag </b>
- ممنوع کردن هرکدام و پاک شدن هر کدام که توسط کاربران ارسال شود
+<b>lock link </b>
+<b>lock spam </b>
+<b>lock flood </b>
+<b>lock fa </b>
+<b>lock en </b>
+<b>lock tgservice </b>
+<b>lock share </b>
+<b>lock text </b>
+<b>lock video </b>
+<b>lock file </b>
+<b>lock gif </b>
+<b>lock fwd </b>
+<b>lock bot </b>
+<b>lock reply </b>
+<b>lock tag </b>
 
-حال برای رفع ممنوعیت هرکدام بجای LOCK از UNLOCK استفاده کنید
-
-<code> مثال </code>:
-<b>lock </b>link                   ممنوع کردن لینک
-
-تعریف هر قفل : 
+حال برای رفع ممنوعیت هرکدام بجای <b>LOCK</b> از <b>UNLOCK</b> استفاده کنید
+ 
 <code>link </code> لینک تبلیغات تلگرام
 <code>spam </code> پیام های طولانی
 <code>flood </code> پیام های مکرر
 <code>fwd </code> فوروارد
-<code>join </code> جوین با لینک
 <code>reply </code> ریپلی یا پاسخ
 <code>teg </code> پیام های دارای تگ
 <code>bot </code> ربات های api
 <code>en </code> متن های انگلیسی
 <code>fa </code> متن های فارسی
-<code>member </code> ادد کردن افراد
+<code>sticker </code> استیکر ها
 <code>tgservice </code> متن های تلگرام در هنگام ریمو یا ادد کردن یا لفت داد و...
 <code>share </code> شیر کردن شماره
 <code>photo </code> عکس
@@ -149,11 +157,17 @@ lhelp = [[راهنما برای لیست های کاربران و گروه :
 <b>banlist </b>
 لیست افراد محروم از گروه
 
-<b>clean modlist|ownerlist|banlist|mutelist|rules|about|bots|deleted|filterlist </b>
-خالی کردن هر کدام
+خالی کردن یا پاک کردن :::::
 
-<code> مثال </code>:
-<b>clean </b><i>modlist </i>        خالی کردن لیست مدیران
+<b>clean modlist </b>
+<b>clean ownerlist </b>
+<b>clean banlist </b>
+<b>clean mutelist </b>
+<b>clean rules </b>
+<b>clean about </b>
+<b>clean deleted </b>
+<b>clean bots </b>
+<b>clean filterlist </b>
 
 تعریف هر CLEAN :
 <code>modlist </code> لیست مدیران
