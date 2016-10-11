@@ -472,7 +472,7 @@ local function ownerlist(msg)
   local groups = "groups"
   local group_owner = data[tostring(msg.to.id)]['set_owner']
   if not group_owner then
-     return "هیچ صاحب اصلی برای این گروه در نظر نظر نگرفته نشده است"
+     return "هیچ صاحب اصلی برای این گروه در نظر نگرفته نشده است"
   end
   if next(data[tostring(msg.to.id)]['owners']) == nil then
      return 'لیستی از جانب '..group_owner..' تشکلیل نشده است'
@@ -1103,7 +1103,6 @@ function get_description(target)
 end
 
 local function get_rules(target)
-  local data = load_data(_config.moderation.data)
   local data_cat = 'rules'
   if not data[tostring(target)][data_cat] then
     return 'No rules available.'
@@ -1398,7 +1397,7 @@ return false
 end
 end
 end
-redis:setex(chash, 4, true)
+redis:setex(chash, 6, true)
 --------------------------------------------------#callback
 local chat_id = msg.to.id
 
@@ -2245,11 +2244,10 @@ if matches[1] == 'clean' and is_momod(msg) then
 	end
 --------------------------------------------------#flood set settings
 if matches[1] == 'setflood' and is_momod(msg) then
-			if tonumber(matches[2]) < 0 or tonumber(matches[2]) > 10 then
+			if tonumber(matches[2]) < 2 or tonumber(matches[2]) > 10 then
 				return "عدد انتخابی باید بین 0 تا 10 باشد\nبرای باز کردن کلی ان از دستور unlock flood بهره ببرید"
 			end
-			local flood_max = matches[2]
-			data[tostring(msg.to.id)]['settings']['flood_msg_max'] = flood_max
+			data[tostring(msg.to.id)]['settings']['flood_msg_max'] = matches[2]
 			save_data(_config.moderation.data, data)
 			return reply_msg(msg.id, 'تعداد پیام های مکرر به '..matches[2]..' محدود شد', ok_cb, false)
 		end
@@ -2257,8 +2255,7 @@ if matches[1] == 'setflood' and is_momod(msg) then
 			if tonumber(matches[2]) < 1 or tonumber(matches[2]) > 5 then
 				return "عدد انتخابی باید بین 1 تا 5 باشد"
 			end
-			local time_flood = matches[2]
-			data[tostring(msg.to.id)]['settings']['flood_time_max'] = time_flood
+			data[tostring(msg.to.id)]['settings']['flood_time_max'] = matches[2]
 			save_data(_config.moderation.data, data)
 			return reply_msg(msg.id, 'زمان تعداد پیام های مکرر '..matches[2]..' محدود شد', ok_cb, false)
 end
@@ -4976,7 +4973,7 @@ end
 --------------------------------------------------#process ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 kicktable = {}
 local function pre_process(msg)
- if msg.from.id == our_id then
+if msg.from.id == our_id then
     return msg
   end
 
@@ -5010,14 +5007,14 @@ local function pre_process(msg)
     redis:sadd(hash, msg.from.id)
   end
 ------------------------------------------------------antispam
-if msg and not msg.service and not is_admin1(msg) then --1
+if not msg.service and not is_admin1(msg) then --1
   local hash = 'msgs:'..msg.from.id..':'..msg.to.id
   redis:incr(hash)
   ----------------
   local hash = 'user'..bot_divest..':'..msg.from.id..':msgs'
   local msgs = tonumber(redis:get(hash) or 0)
 if msg.to.type == "user" then
-     local max_msg = 5
+     local max_msg = 4
  	 if msgs >= max_msg then
         return block_user("user#id"..msg.from.id,ok_cb,false)
      end
@@ -5043,7 +5040,7 @@ if not is_momod(msg) and msg.to.type == "channel" or msg.to.type == "chat" then 
          TIME_CHECK = tonumber(data[tostring(msg.to.id)]['settings']['flood_time_max'])
     end
 local spammers = "spammers"..bot_divest..":"..msg.to.id..":"..msg.from.id
-local NUM_MSG_MAX2  = math.floor(NUM_MSG_MAX - 1)
+local NUM_MSG_MAX2  = NUM_MSG_MAX
 if msgs >= NUM_MSG_MAX2 then
 local gbanspam = "gban"..bot_divest..":spam"..msg.from.id
 delete_msg(msg.id, ok_cb, false)
@@ -5061,14 +5058,14 @@ local spammers1 = redis:get(spammers)
       end
 	  redis:incr(gbanspam)
    if gbanspamonredis then
-        if tonumber(gbanspamonredis) == 4 or tonumber(gbanspamonredis) >= 4 then
+        if tonumber(gbanspamonredis) >= 3 then
 		  delete_msg(msg.id, ok_cb, false)
 		  ban_user(msg.from.id, msg.to.id)
 	      redis:del(gbanspam, true)
-          return send_large_msg(receiver, "کاربر "..username.." بدلیل اسپم بیش از 4 بار بن شد")
+          return send_large_msg(receiver, "کاربر "..username.." بدلیل اسپم بیش از 3 بار بن شد")
        end
    end
-      redis:setex(spammers, 5, true)
+      redis:setex(spammers, 10, true)
 	  delete_msg(msg.id, ok_cb, false)
 	  kick_user(msg.from.id, msg.to.id)
 	  send_large_msg(receiver, "کاربر "..username.." به دلیل ارسال پیام های مکرر بیش از "..NUM_MSG_MAX.." بار ریمو شد")
@@ -5113,7 +5110,7 @@ local text = "سلام "..msg.from.print_name:gsub("_"," ").." "..[[ به ربا
 ادرس کانال ربات : @UB_CH
 تمام بروز رسانی ها در این کانال قرار خواهد گرفت
 
-ساعاتی خوش برایتان ارزو مندیم 
+ساعاتی خوش برایتان ارزومندیم 
 ]]
 if not is_sudo(msg) then
 local users = 'pvusers'
@@ -5347,7 +5344,7 @@ if data[tostring(chat_id)] then
 	  if not spammers1 then
      local text = 'کاربر '..name..' بدلایلی بن ال است و ریمو شد\nبرای رفع این مشکل باید این پیام را در @UBsupBOT فوروارد کند'
      reply_msg(msg.id, text, ok_cb, false)
-	 redis:setex(spammers, 5, true)
+	 redis:setex(spammers, 10, true)
 	 delete_msg(msg.id, ok_cb, false)
      return kick_user(user_id, chat_id)
 	 end
@@ -5411,7 +5408,7 @@ if msg.fwd_from and is_momod(msg) then
 		 end
 	     redis:del('kmember'..bot_divest..':'..msg.to.id, true)
          kick_user(msg.fwd_from.peer_id, msg.to.id)
-         return send_large_msg(receiver, '❌کاربر '..msg.fwd_from.peer_id..' از گروه '..msg.to.title..' اخراج شد')
+         return send_large_msg(receiver, '❌کاربر '..msg.fwd_from.peer_id..' اخراج شد')
         end
 	  end
 	end
@@ -5432,8 +5429,7 @@ return msg
 end
 end
 
-if msg and msg.to.type == "channel" and not is_momod(msg) and not is_whitelisted(msg.from.id) and msg.to.type == 'channel' and data[tostring(msg.to.id)] then
-
+if msg.to.type == "channel" and not is_momod(msg) and data[tostring(msg.to.id)] then
    local gwarns = 'warnall'..bot_divest..':'..msg.from.id..':'..msg.to.id
    local target = msg.to.id
    lock_link = data[tostring(msg.to.id)]['settings']['lock_link']
@@ -5480,9 +5476,7 @@ local hash = 'chat:'..msg.to.id..':badword'
     local names = redis:hkeys(hash)
     for i=1, #names do --3
 	  if string.match(msg.text:lower(), names[i]) then --4
-        if msg.to.type == 'channel' then --5
            return delete_msg(msg.id,ok_cb,false)
-	    end
       end
     end
   end
@@ -5498,13 +5492,13 @@ local is_fars_msg = msg.text:match("[\216-\219][\128-\191]")
 if lock_spam == "yes" and is_fars_msg and string.len(msg.text) > 6000 then
 	    redis:incr(gwarns)
 	    return delete_msg(msg.id, ok_cb, false)
-    elseif lock_spam == "yes" and not is_fars_msg and string.len(msg.text) > 4000 then
+    elseif lock_spam == "yes" and msg.text:match("[a-zA-Z]") and string.len(msg.text) > 4000 then
 	    redis:incr(gwarns)
 	    return delete_msg(msg.id, ok_cb, false)
     elseif lock_spam == "kick" and is_fars_msg and string.len(msg.text) > 6000 then
 	    delete_msg(msg.id, ok_cb, false)
 		return kick_user(msg.from.id, msg.to.id)
-	elseif lock_spam == "kick" and not is_fars_msg and string.len(msg.text) > 4000 then
+	elseif lock_spam == "kick" and msg.text:match("[a-zA-Z]") and string.len(msg.text) > 4000 then
 	    delete_msg(msg.id, ok_cb, false)
 	    return kick_user(msg.from.id, msg.to.id)
 end
@@ -5525,7 +5519,7 @@ if lock_tag == "yes" and is_tag_msg then
 		return kick_user(msg.from.id, msg.to.id)
 end
 --"[a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z]""[a-zA-Z]"
-local is_en_msg = (msg.text:lower()):match("[a-z]")
+local is_en_msg = msg.text:match("[a-zA-Z]")
 if lock_en == "yes" and is_en_msg then
 	    redis:incr(gwarns)
 		return delete_msg(msg.id, ok_cb, false)
@@ -5560,15 +5554,11 @@ end
 if msg.media then
 if msg.media.caption then
 local hash = 'chat:'..msg.to.id..':badword'
-if msg.media.type:match("photo") then --2
 if hash then --3
 local names = redis:hkeys(hash)
     for i=1, #names do --4
-if msg.media.caption then --5
 if string.match(msg.media.caption:lower(), names[i]) then --6
    return delete_msg(msg.id,ok_cb,false)
-end
-end
 end
 end
 end
@@ -5664,10 +5654,10 @@ end
 end
 
 end
-  if msg.text and msg.text:lower() == "bot on" and is_owner(msg) then
+  if msg.text and is_owner(msg) and msg.text:lower() == "bot on" then
 	enable_channel(receiver)
     return send_large_msg(receiver, "ربات در این گروه فعال گردید" )
-  elseif msg.text and msg.text:lower() == "bot off" and is_owner(msg) then
+  elseif msg.text and is_owner(msg) and msg.text:lower() == "bot off" then
     disable_channel(receiver)
 	return send_large_msg(receiver, "ربات در این گروه غیرفعال گردید" )
   end
@@ -5675,7 +5665,7 @@ end
    if is_owner(msg) then
    for name,plugin in pairs(plugins) do
    for k, pattern in pairs(plugin.patterns) do
-  if msg and msg.text then
+  if msg.text then
    matches = match_pattern(pattern, msg.text:lower())
   else
    matches = match_pattern(pattern, msg.text)
