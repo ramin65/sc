@@ -42,5 +42,5 @@ else
     exit 1
   fi
   rm -r ../.telegram-cli/state #Prevent tg from crash
-  ./tg/bin/telegram-cli -k ./tg/tg-server.pub -s ./bot/bot.lua -l 1 -E $@
+  ./tg/bin/telegram-cli -k ./tg/tg-server.pub -s ./bot.lua -l 1 -E $@
 fi
